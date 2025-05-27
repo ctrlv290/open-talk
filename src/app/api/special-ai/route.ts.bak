@@ -8,7 +8,7 @@ import OpenAI from "openai";
 // - Rate limiting and abuse prevention should be considered for production
 // </SECURITY_REVIEW>
 
-// OpenAI 클라이언트 초기화
+// OpenAI ?�라?�언??초기??
 const getOpenAIClient = () => {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     let systemMessage = "";
     
     
-    // 역할에 따른 시스템 메시지 설정
+    // ??��???�른 ?�스??메시지 ?�정
     switch (role) {
       case "emoji-generator":
         systemMessage = "You will be provided with text, and your task is to translate it into emojis. Do not use any regular text. Do your best with emojis only.";
@@ -41,6 +41,21 @@ export async function POST(req: NextRequest) {
         
       case "translator":
         const targetLanguage = options?.targetLanguage || "english";
+        let languageName = "";
+        
+        switch (targetLanguage) {
+          case "english":
+            languageName = "?�어";
+            break;
+          case "japanese":
+            languageName = "?�본??;
+            break;
+          case "chinese":
+            languageName = "중국??;
+            break;
+          default:
+            languageName = "?�어";
+        }
         
         systemMessage = `You will be provided with a sentence in Korean, and your task is to translate it into ${targetLanguage}. Only provide the translated text without any explanations.`;
         break;
@@ -56,23 +71,23 @@ export async function POST(req: NextRequest) {
     const client = getOpenAIClient();
     
     const response = await client.chat.completions.create({
-      model: "gpt-4",  // 또는 사용 가능한 최신 모델
+      model: "gpt-4",  // ?�는 ?�용 가?�한 최신 모델
       messages: [
         { role: "system", content: systemMessage },
         { role: "user", content: input }
       ],
-      temperature: role === "emoji-generator" ? 0.7 : 0.3,  // 이모지는 조금 더 창의적으로
+      temperature: role === "emoji-generator" ? 0.7 : 0.3,  // ?�모지??조금 ??창의?�으�?
     });
     
     const result = response.choices[0]?.message?.content || "";
     
-    // 색상 생성의 경우 JSON 형식 처리
+    // ?�상 ?�성�?경우 JSON ?�식 처리
     if (role === "color-generator") {
       try {
-        // 응답이 JSON 형식이 아닐 경우를 대비한 처리
+        // ?�답??JSON ?�식???�닐 경우�??�비한 처리
         let colorData = result;
         
-        // 문자열에서 JSON 부분 추출 시도
+        // 문자?�에??JSON 부�?추출 ?�도
         if (!result.trim().startsWith('{')) {
           const jsonMatch = result.match(/\{[\s\S]*\}/);
           if (jsonMatch) {
@@ -80,21 +95,21 @@ export async function POST(req: NextRequest) {
           }
         }
         
-        // JSON 파싱 시도
+        // JSON ?�싱 ?�도
         const parsedResult = JSON.parse(colorData);
         return NextResponse.json({ result: parsedResult });
-      } catch (_) {
-        // JSON 파싱 실패 시 일반 텍스트로 반환
+      } catch \(_e\) {
+        // JSON ?�싱 ?�패 ???�반 ?�스?�로 반환
         return NextResponse.json({ 
-          result: { css_code: "#7B68EE" }, // 기본 색상 제공
+          result: { css_code: "#7B68EE" }, // 기본 ?�상 ?�공
           error: "Failed to parse color data"
         });
       }
     }
     
     return NextResponse.json({ result });
-  } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+  } catch (e: unknown) {
+    const errorMessage = e instanceof Error ? e.message : "Unknown error";
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 } 

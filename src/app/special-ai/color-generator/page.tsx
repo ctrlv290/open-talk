@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { MdOutlineColorLens, MdSend, MdContentCopy, MdRefresh } from 'react-icons/md';
+import { MdOutlineColorLens, MdSend, MdContentCopy } from 'react-icons/md';
 import AIRoleLayout from '../components/AIRoleLayout';
 
 export default function ColorGeneratorPage() {
@@ -38,8 +38,8 @@ export default function ColorGeneratorPage() {
     return sanitized;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     if (!input.trim()) return;
 
     setIsLoading(true);
@@ -113,13 +113,13 @@ export default function ColorGeneratorPage() {
       const g = parseInt(cleanHex.substring(2, 4), 16);
       const b = parseInt(cleanHex.substring(4, 6), 16);
       return { r, g, b };
-    } catch (e) {
+    } catch (_) {
       // 변환 실패 시 기본값 반환
       return { r: 123, g: 104, b: 238 }; // 기본 보라색
     }
   };
 
-  // 대비 색상 계산 (텍스트 색상)
+  // 대비색 계산 (스크린)
   const getContrastColor = (hexColor: string) => {
     try {
       const { r, g, b } = hexToRgb(hexColor);
@@ -127,14 +127,14 @@ export default function ColorGeneratorPage() {
       const brightness = (r * 299 + g * 587 + b * 114) / 1000;
       return brightness > 128 ? '#000000' : '#FFFFFF';
     } catch {
-      return '#FFFFFF'; // 기본값은 흰색
+      return '#FFFFFF'; // 기본값 반환
     }
   };
 
   return (
     <AIRoleLayout
-      title="컬러 생성기"
-      description="텍스트 설명으로 분위기에 맞는 색상을 생성합니다. 웹 디자인, 프레젠테이션, UI에 활용하세요."
+      title="컬러 생성"
+      description="스크린명으로 분위기에 맞는 색상을 찾아주세요. 예) 바다의 뜻을.. 또는 노을 바다.."
       gradientFrom="from-teal-400"
       gradientTo="to-emerald-500"
       icon={<MdOutlineColorLens size={30} />}
@@ -143,13 +143,13 @@ export default function ColorGeneratorPage() {
         <form onSubmit={handleSubmit} className="p-4 sm:p-6">
           <div className="mb-4">
             <label htmlFor="color-input" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              색상 설명
+              색상 이름
             </label>
             <textarea
               id="color-input"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="색상의 분위기를 설명해보세요. 예: 여름 바다의 청량함, 가을 숲의 따뜻함..."
+              placeholder="색상을 분위기와 함께 입력해주세요. 예) 바다의 뜻을.. 또는 노을 바다.."
               className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none transition-all duration-200"
               rows={3}
               disabled={isLoading}
@@ -164,12 +164,12 @@ export default function ColorGeneratorPage() {
             {isLoading ? (
               <div className="flex items-center">
                 <div className="animate-spin mr-2 h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
-                생성 중...
+                색상 생성중..
               </div>
             ) : (
               <>
                 <MdSend className="mr-2" size={18} />
-                색상 생성하기
+                색상 생성
               </>
             )}
           </button>
@@ -185,14 +185,14 @@ export default function ColorGeneratorPage() {
           <div className="border-t border-gray-200 dark:border-gray-800">
             <div className="p-4 sm:p-6">
               <div className="flex justify-between items-center mb-3">
-                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">생성된 색상</h3>
+                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">색상 결과</h3>
                 <div className="flex space-x-2">
                   <button
                     onClick={() => copyToClipboard(result.css_code)}
                     className="text-xs flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
                   >
                     <MdContentCopy className="mr-1" size={14} />
-                    {isCopied ? '복사됨!' : '복사'}
+                    {isCopied ? '복사됨' : '복사'}
                   </button>
                 </div>
               </div>
@@ -211,11 +211,11 @@ export default function ColorGeneratorPage() {
               </div>
               
               <div className="mt-4 flex flex-wrap gap-2">
-                {/* 다양한 음영 표시 */}
+                {/* 양대비 시 */}
                 {Array.from({ length: 5 }).map((_, i) => {
                   try {
                     const { r, g, b } = hexToRgb(result.css_code);
-                    // 음영 조정 (더 어둡게/밝게)
+                    // 영대비 조정 (오두밝게)
                     const factor = 0.7 + (i * 0.15); // 0.7, 0.85, 1.0, 1.15, 1.3
                     const newR = Math.min(255, Math.max(0, Math.round(r * factor)));
                     const newG = Math.min(255, Math.max(0, Math.round(g * factor)));
